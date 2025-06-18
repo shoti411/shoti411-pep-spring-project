@@ -14,6 +14,7 @@ import java.util.Optional;
 @Service
 public class MessageService {
     MessageRepository messageRepository;
+    
     @Autowired
     public MessageService(MessageRepository messageRepository) {
         this.messageRepository = messageRepository;

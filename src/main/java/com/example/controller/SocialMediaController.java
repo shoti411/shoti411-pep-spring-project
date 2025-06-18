@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.azul.crs.client.Response;
 import com.example.entity.*;
 
 import com.example.service.AccountService;
@@ -80,12 +81,23 @@ public class SocialMediaController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<Account> registerAccount(@RequestBody Account account) {
+    public ResponseEntity<Account> registerAccount(@RequestBody Account account) throws IllegalArgumentException, IllegalStateException {
         this.accountService.persistAccount(account);
         return ResponseEntity.status(200).body(account);
     }
 
-    // TODO: fix login
+    @ExceptionHandler({IllegalArgumentException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST) // this is 400
+    public ResponseEntity<Void> handleBadRequest(IllegalArgumentException ex) {
+        return ResponseEntity.status(400).body(null);
+    }
+
+    @ExceptionHandler({IllegalStateException.class})
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<Void> handleConflictingAccountUsernames(IllegalStateException ex) {
+        return ResponseEntity.status(409).body(null);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<Account> login(@RequestBody Account account) throws AuthenticationException {
         Account accountFromDatabase = this.accountService.login(account.getUsername(), account.getPassword());

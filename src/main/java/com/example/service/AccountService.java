@@ -27,7 +27,16 @@ public class AccountService {
      * @param account the account to be saved
      * @return the account being saved
      */
-    public Account persistAccount(Account account) {
+    public Account persistAccount(Account account) throws IllegalArgumentException, IllegalStateException {
+        if (account.getUsername().isBlank() || account.getPassword().length() < 4) {
+            throw new IllegalArgumentException();
+        }
+        List<Account> accounts = this.accountRepository.findAll();
+        for (Account acc: accounts) {
+            if (acc.getUsername().equals(account.getUsername())) {
+                throw new IllegalStateException();
+            }
+        }
         return accountRepository.save(account);
     }
 

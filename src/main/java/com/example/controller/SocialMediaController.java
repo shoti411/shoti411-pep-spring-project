@@ -61,7 +61,8 @@ public class SocialMediaController {
     }
 
     @PatchMapping("/messages/{messageId}")
-    public ResponseEntity<Integer> patchMessageFromMessageId(@PathVariable int messageId, @RequestBody String newMessageText) {
+    public ResponseEntity<Integer> patchMessageFromMessageId(@PathVariable int messageId, @RequestBody Message newMessage) throws IllegalArgumentException {
+        String newMessageText = newMessage.getMessageText();
         Integer rowsUpdated = this.messageService.patchMessageByMessageId(messageId, newMessageText);
         return ResponseEntity.status(200).body(rowsUpdated);
     }
@@ -75,7 +76,8 @@ public class SocialMediaController {
 
     @PostMapping("/messages")
     public ResponseEntity<Message> postMessage(@RequestBody Message message) {
-        this.messageService.persistMessage(message);
+        List<Account> accountsInDatabase = this.accountService.getAllAccounts();
+        this.messageService.persistMessage(message, accountsInDatabase);
         return ResponseEntity.status(200).body(message);
     }
 

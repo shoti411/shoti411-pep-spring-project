@@ -24,18 +24,28 @@ public class MessageService {
     /**
      * Creates a Message to be saved to the database
      * @param message the message to be saved
+     * @param accountsInDatabase the list of accounts to check whether the message had a valid postedBy account id
      * @return the message being saved
      */
-    public Message persistMessage(Message message) throws IllegalArgumentException {
+    public Message persistMessage(Message message, List<Account> accountsInDatabase) throws IllegalArgumentException {
         if (
             message.getMessageText().isBlank() || // if messageText blank
-            message.getMessageText().length() > 255 // if messageText over 255 characters
-            ) { // TODO: if messageId does not exist
+            message.getMessageText().length() > 255 || // if messageText over 255 characters
+            !doesMessagePostedByExistInAccountList(message.getPostedBy(), accountsInDatabase)) { // if message exists in database
             throw new IllegalArgumentException();
         } else {
             return messageRepository.save(message);
         }
 
+    }
+
+    private boolean doesMessagePostedByExistInAccountList(int messageId, List<Account> accounts) {
+        for (int i = 0; i < accounts.size(); i++) {
+            if (accounts.get(i).getAccountId().equals(messageId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Message> getAllMessages() {
@@ -67,14 +77,10 @@ public class MessageService {
     }
 
     public Integer patchMessageByMessageId(Integer messageId, String newMessageText) throws IllegalArgumentException {
-        System.out.println(newMessageText);
-        if (newMessageText.isBlank()) {
-            throw new IllegalArgumentException();
-        }
         Optional<Message> optionalMessage = messageRepository.findById(messageId);
         if(
             optionalMessage.isPresent() && // if message exists
-            // (!newMessageText.isBlank()) && // if messageText is not blank
+            (!newMessageText.isBlank()) && // if messageText is not blank
             newMessageText.length() <= 255) { // if messageText length is not over 255 characters
             Message message = optionalMessage.get();
             message.setMessageText(newMessageText);

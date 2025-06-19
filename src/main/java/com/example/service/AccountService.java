@@ -22,6 +22,10 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
+    public List<Account> getAllAccounts() {
+        return this.accountRepository.findAll();
+    }
+
     /**
      * Creates a User Account and saves it to the database
      * @param account the account to be saved

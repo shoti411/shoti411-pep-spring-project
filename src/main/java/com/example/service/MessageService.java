@@ -31,7 +31,7 @@ public class MessageService {
         if (
             message.getMessageText().isBlank() || // if messageText blank
             message.getMessageText().length() > 255 || // if messageText over 255 characters
-            !doesMessagePostedByExistInAccountList(message.getPostedBy(), accountsInDatabase)) { // if message exists in database
+            !doesMessagePostedByExistInAccountList(message.getPostedBy(), accountsInDatabase)) { // if message does not exist in database
             throw new IllegalArgumentException();
         } else {
             return messageRepository.save(message);

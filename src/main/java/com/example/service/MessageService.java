@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.entity.Message;
+import com.example.entity.Account;
 import com.example.repository.MessageRepository;
 
 
@@ -25,8 +26,16 @@ public class MessageService {
      * @param message the message to be saved
      * @return the message being saved
      */
-    public Message persistMessage(Message message) {
-        return messageRepository.save(message);
+    public Message persistMessage(Message message) throws IllegalArgumentException {
+        if (
+            message.getMessageText().isBlank() || // if messageText blank
+            message.getMessageText().length() > 255 // if messageText over 255 characters
+            ) { // TODO: if messageId does not exist
+            throw new IllegalArgumentException();
+        } else {
+            return messageRepository.save(message);
+        }
+
     }
 
     public List<Message> getAllMessages() {
@@ -46,19 +55,33 @@ public class MessageService {
         return messageRepository.findMessagesByPostedBy(postedBy);
     }
 
-    public void deleteMessageByMessageId(Integer messageId) {
-        messageRepository.deleteById(messageId);
+    public Integer deleteMessageByMessageId(Integer messageId) {
+        Optional<Message> optionalMessage = this.messageRepository.findById(messageId);
+        if (optionalMessage.isPresent()) { // if id exists
+            this.messageRepository.deleteById(messageId);
+            return 1;
+        } else {
+            return null;
+        }
+        
     }
 
-    public int updateMessageByMessageId(Integer messageId, String messageText) {
+    public Integer patchMessageByMessageId(Integer messageId, String newMessageText) throws IllegalArgumentException {
+        System.out.println(newMessageText);
+        if (newMessageText.isBlank()) {
+            throw new IllegalArgumentException();
+        }
         Optional<Message> optionalMessage = messageRepository.findById(messageId);
-        if(optionalMessage.isPresent()) {
+        if(
+            optionalMessage.isPresent() && // if message exists
+            // (!newMessageText.isBlank()) && // if messageText is not blank
+            newMessageText.length() <= 255) { // if messageText length is not over 255 characters
             Message message = optionalMessage.get();
-            message.setMessageText(messageText);
+            message.setMessageText(newMessageText);
             messageRepository.save(message);
-            return 1; // returns 1 because success
+            return 1; // returns 1 because success and thats the number of rows updated
         } else {
-            return 0; // returns 0 because failure
+            throw new IllegalArgumentException();
         }
     }
 }

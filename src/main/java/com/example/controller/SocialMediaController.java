@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.azul.crs.client.Response;
 import com.example.entity.*;
 
 import com.example.service.AccountService;
@@ -37,9 +37,6 @@ import com.example.service.MessageService;
  */
 @RestController
 public class SocialMediaController {
-    // ApplicationContext applicationContext = SpringApplication.run(SocialMediaController.class);
-    // AccountService accountService = applicationContext.getBean(AccountService.class);
-    // MessageService messageService = applicationContext.getBean(MessageService.class);
 
     private AccountService accountService;
     private MessageService messageService;
@@ -60,18 +57,20 @@ public class SocialMediaController {
     @GetMapping("/messages/{messageId}")
     public ResponseEntity<Message> getMessageFromMessageId(@PathVariable int messageId) {
         Message message = this.messageService.getMessageByMessageId(messageId);
-        if (message == null) {
-            return ResponseEntity.status(401).body(message);
-        } else {
-            return ResponseEntity.status(200).body(message);
-        }
+        return ResponseEntity.status(200).body(message);
     }
 
-    // TODO: PUT REQUIREMENTS IF DELETE FAILED
+    @PatchMapping("/messages/{messageId}")
+    public ResponseEntity<Integer> patchMessageFromMessageId(@PathVariable int messageId, @RequestBody String newMessageText) {
+        Integer rowsUpdated = this.messageService.patchMessageByMessageId(messageId, newMessageText);
+        return ResponseEntity.status(200).body(rowsUpdated);
+    }
+
+
     @DeleteMapping("/messages/{messageId}")
     public ResponseEntity<Integer> deleteMessageFromMessageId(@PathVariable int messageId) {
-        this.messageService.deleteMessageByMessageId(messageId);
-        return ResponseEntity.accepted().body(1);
+        Integer rowsModified = this.messageService.deleteMessageByMessageId(messageId);
+        return ResponseEntity.status(200).body(rowsModified);
     }
 
     @PostMapping("/messages")
@@ -93,7 +92,7 @@ public class SocialMediaController {
     }
 
     @ExceptionHandler({IllegalStateException.class})
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.CONFLICT) // 409
     public ResponseEntity<Void> handleConflictingAccountUsernames(IllegalStateException ex) {
         return ResponseEntity.status(409).body(null);
     }

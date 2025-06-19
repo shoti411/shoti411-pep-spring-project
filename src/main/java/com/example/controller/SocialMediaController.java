@@ -87,7 +87,8 @@ public class SocialMediaController {
         return ResponseEntity.status(200).body(account);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class})
+    // I made all the places in the business logic in the service class throw IllegalArgumentExceptions when needed a 400 error
+    @ExceptionHandler({IllegalArgumentException.class}) 
     @ResponseStatus(HttpStatus.BAD_REQUEST) // this is 400
     public ResponseEntity<Void> handleBadRequest(IllegalArgumentException ex) {
         return ResponseEntity.status(400).body(null);
@@ -109,6 +110,12 @@ public class SocialMediaController {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<Void> handleUnauthorized(AuthenticationException authException) {
         return ResponseEntity.status(401).body(null);
+    }
+
+    @GetMapping("/accounts/{accountId}/messages")
+    public ResponseEntity<List<Message>> getMessagesFromAccount(@PathVariable int accountId) {
+        List<Message> messages = this.messageService.getMessagesByPostedBy(accountId);
+        return ResponseEntity.status(200).body(messages);
     }
 
 }
